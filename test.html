@@ -1,0 +1,119 @@
+<html>
+<head>
+  <title>Test Maximize Image</title>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+  <style>
+    body {
+      margin: 200px;
+    }
+
+    .icon {
+      width: 50px;
+      line-height: 50px;
+    }
+
+    .js-maximizable {
+      cursor:zoom-in;
+    }
+
+    .maximized {
+      cursor:zoom-out;
+      position: absolute;
+    }
+  </style>
+
+  <script>
+    function originalWidthAttr()  { return 'jg-original-width'; }
+    function originalHeightAttr() { return 'jg-original-height'; }
+
+    function getFutureHeight($image, width) {
+      var currentHeight = $image.height();
+      var currentWidth  = $image.width();
+
+      var ratioWidthHeight = currentWidth / currentHeight;
+      return width / ratioWidthHeight;
+    }
+
+    function isMaximized($image)
+    {
+      var original_width = $image.data(originalWidthAttr());
+
+      // Never set the original width? So never maximized
+      if( original_width == undefined )
+        return false;
+
+      var current_width = $image.width();
+      return original_width != current_width;
+    }
+
+    function maximize($image, animation_speed, width)
+    {
+      // Save original size
+      $image.data(originalWidthAttr(), $image.width());
+      $image.data(originalHeightAttr(), $image.height());
+
+      // Update style
+      $image.addClass('maximized');
+
+      var currentTop    = $image.offset().top;
+      var currentLeft   = $image.offset().left;
+      var currentWidth  = $image.width();
+      var currentHeight = $image.height();
+
+      // Calculate future height
+      // It is directly dependant on future width
+      var height = getFutureHeight($image, width);
+
+      $image.css('top', currentTop);
+      $image.css('left', currentLeft);
+
+      // Animate width raise
+      $image.stop().animate({
+        width: width,
+        maxWidth: width,
+        left: currentLeft - (width - currentWidth) / 2,
+        top: currentTop - (height - currentHeight) / 2
+      }, animation_speed);
+    }
+
+    function minimize($image, animation_speed)
+    {
+      var original_width  = $image.data(originalWidthAttr());
+      var original_height = $image.data(originalHeightAttr());
+      var currentLeft     = $image.offset().left;
+      var currentTop      = $image.offset().top;
+      var currentWidth    = $image.width();
+      var currentHeight   = $image.height();
+
+      // Animate restoring of original width
+      $image.stop().animate({
+        width: original_width,
+        left: currentLeft + (currentWidth - original_width) / 2,
+        top: currentTop + (currentHeight - original_height) / 2
+      }, animation_speed, function() {
+        // Update style
+        $image.removeClass('maximized');
+      });
+    }
+
+    $(document).ready(function()
+    {
+      var animation_speed = 300;
+
+      $(".js-maximizable").click(function() {
+        if( isMaximized($(this)) )
+          minimize($(this), animation_speed);
+        else
+          maximize($(this), animation_speed, 200);
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+  <img src="public/images/image.jpg" class="icon js-maximizable" />
+  <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p>
+</body>
+</html>
